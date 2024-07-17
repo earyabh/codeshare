@@ -1,0 +1,36 @@
+package org.example.util;
+
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
+import javafx.util.Pair;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+
+public class DelayPrint extends CacheLoader<String, Pair<String,List<Employee>>> {
+    private static LoadingCache<String, Pair<String,List<Employee>>> cache;
+    Pair<String,List<Employee>> myData;
+
+    @Override
+    public Pair<String,List<Employee>> load(String key) {
+        this.myData = new Pair<>(key,new ArrayList<>());
+        return this.myData;
+    }
+
+    public static LoadingCache<String, Pair<String,List<Employee>>> getCache() {
+        if (cache == null) {
+            cache = CacheBuilder.newBuilder().expireAfterWrite(500, TimeUnit.MILLISECONDS).build(new DelayPrint());
+        }
+        return cache;
+    }
+
+    public static boolean dataConnectCacheInValidate(String key) {
+        if (cache != null) {
+            cache.invalidate(key);
+            return true;
+        }
+        return false;
+    }
+}
