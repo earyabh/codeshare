@@ -1,0 +1,44 @@
+package org.example;
+
+
+import com.google.common.cache.Cache;
+import com.google.common.cache.LoadingCache;
+import javafx.util.Pair;
+import org.example.util.DelayPrint;
+import org.example.util.Employee;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
+
+public class Main {
+    public static void main(String[] args) {
+        List<String> myList = Arrays.asList("a", "b", "a", "a", "c", "d", "e", "f", "g", "h");
+
+        final LoadingCache<String, Pair<String, List<Employee>>> myCache = DelayPrint.getCache();
+
+        final AtomicInteger[] index = {new AtomicInteger()};
+        myList.stream().forEach(a -> {
+            try {
+                Employee myEmployee = new Employee();
+                myEmployee.setName(a);
+                myEmployee.setId(index[0].get());
+
+                if (myCache.getUnchecked(a).getValue().size() != 0) {
+                    List<Employee> employeeList = myCache.getUnchecked(a).getValue();
+                    employeeList.forEach(Employee::printData);
+                    System.out.println("Got the Old Cache Size : " + myCache.size());
+                } else {
+                    myCache.getUnchecked(a).getValue().add(myEmployee);
+                }
+                Thread.sleep(100);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            index[0].getAndIncrement();
+        });
+    }
+
+}
